@@ -49,7 +49,12 @@ protected:
 
 private slots:
     void on_sld_quality_valueChanged(int value);
+    void on_sld_quality_sliderPressed();
+    void on_sld_quality_sliderReleased();
+
     void on_sld_scale_valueChanged(int value);
+    void on_sld_scale_sliderPressed();
+    void on_sld_scale_sliderReleased();
 
     void on_btn_zoomin_clicked();
     void on_btn_zoomout_clicked();
@@ -58,23 +63,26 @@ private slots:
     void on_btn_rotate_right_clicked();
     void on_btn_rotate_left_clicked();
 
-    // runs in gui thread
-    void show_pixmap();
+    void show_pixmap();  // runs in gui thread
+    void reprocess_image_smooth(int scale, int);  // runs in gui thread
+    void reprocess_image_impl(int scale, int quality);  // runs in concurrent thread
 
-    // runs in concurrent thread
-    void reprocess_image_impl(int scale, int quality);
+    void reprocess_image_fast(int scale, int);  // runs in gui thread
+    void show_pixmap_fast();  // runs in gui thread
 
     void on_action_open_triggered();
     void on_action_save_as_triggered();
-    void on_actionExit_triggered();
+    void on_action_exit_triggered();
 
 private:
+    void reprocess_image();
     void reprocess_image(int scale, int quality);
     bool rescale_image(int);
     bool requality_image(int);
 
     void change_size();
 
+    QByteArray m_out_data;
     QString m_image_path;
     std::mutex m_mutex;
     QPixmap m_pixmap;
@@ -82,10 +90,12 @@ private:
     qint16 m_current_scale;
     qint64 m_new_size;
 
+    bool m_fast;
+
     int m_new_w;
     int m_new_h;
     int m_sld_zoom_value;
-    double m_ZoomFactor;
+    double m_zoom_factor;
 
     QGraphicsScene *m_scene;
     QMovie *m_loading_animation;
